@@ -1,0 +1,20 @@
+{
+  "project_group": "deptest",
+  "app_name": "sonarqube-helm",
+  "app_type": "helm",
+  "pipeline_version": "1.0",
+  "environments":   [
+        {
+      "name": "dev",
+      "branch": "master",
+      "autodeploy": true,
+      "deployments": [{"site": "hk"}]
+    },
+        {
+      "name": "uat",
+      "branch": "uat",
+      "autodeploy": true,
+      "deployments": [{"site": "hk"}]
+    }
+  ]
+}
