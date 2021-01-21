@@ -3,10 +3,30 @@
 # Declare variables to be passed into your templates.
 sonarApp:
   appname: sonar
+  sonarUsername: sonar
+  sonarPassword: sonar
+  storage:
+    className: default
+    storageRequestSize: 10Gi
   image:
     repository: sonarqube:6.5
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
     port: 80
-    targetPort: 9099
+    targetPort: 9000
+
+mysqlApp:
+  appname: sonar-mysql
+  mysqlUser: sonar
+  mysqlRootPassword: password
+  mysqlPassword: sonar
+  mysqlSonarDB: sonar
+  storage:
+    className: default
+    storageRequestSize: 5Gi
+  image:
+    repository: mysql:5.7
+    pullPolicy: IfNotPresent
+  service:
+    port: 3306

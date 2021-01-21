@@ -1,4 +1,28 @@
-apiVersion: extensions/v1beta1
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "sonarApp.name" . }}qube-data
+spec:
+  storageClassName: {{ .Values.sonarApp.storage.className }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.sonarApp.storage.storageRequestSize }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "sonarApp.name" . }}qube-extensions
+spec:
+  storageClassName: {{ .Values.sonarApp.storage.className }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.sonarApp.storage.storageRequestSize }}
+---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "sonarApp.name" . }}-app
@@ -6,10 +30,13 @@ metadata:
     app: {{ template "sonarApp.name" . }}
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "sonarApp.name" . }}
   template:
     metadata:
       labels:
-        app: sonar-deployment
+        app: {{ template "sonarApp.name" . }}
     spec:
       containers:
         - name: {{ template "sonarApp.name" . }}-appserver
@@ -19,27 +46,23 @@ spec:
               containerPort: {{ .Values.sonarApp.service.targetPort }}
           env:
             - name: SONARQUBE_JDBC_USERNAME
-              value: sonar
+              value: {{ .Values.sonarApp.sonarUsername }}
             - name: SONARQUBE_JDBC_PASSWORD
-              value: sonar
+              value: {{ .Values.sonarApp.sonarPassword }}
             - name: SONARQUBE_JDBC_URL
-              value: jdbc:mysql://sonar-mysql:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true
+              value: jdbc:mysql://{{ .Values.mysqlApp.appname }}-service:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true
           volumeMounts:
-            - name: sonarqube-extensions
+            - name: {{ template "sonarApp.name" . }}qube-extensions
               mountPath: /opt/sonarqube/extensions
-            - name: sonarqube-data
+            - name: {{ template "sonarApp.name" . }}qube-data
               mountPath: /opt/sonarqube/data
       volumes:
-        - name: sonarqube-extensions
-          nfs:
-            server: ""
-            path: "/sonarqube/extensions"
-            readOnly: false
-        - name: sonarqube-data
-          nfs:
-            server: ""
-            path: "/sonarqube/data"
-            readOnly: false
+        - name: {{ template "sonarApp.name" . }}qube-extensions
+          persistentVolumeClaim:
+            claimName: {{ template "sonarApp.name" . }}qube-extensions
+        - name: {{ template "sonarApp.name" . }}qube-data
+          persistentVolumeClaim:
+            claimName: {{ template "sonarApp.name" . }}qube-data
   strategy:
     type: RollingUpdate
     rollingUpdate:
