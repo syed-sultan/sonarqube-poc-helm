@@ -1,6 +1,6 @@
 {
   "project_group": "deptest",
-  "app_name": "sonarqube-helm",
+  "app_name": "d2c-app-sonarqube-hk",
   "app_type": "helm",
   "pipeline_version": "1.0",
   "environments":   [
