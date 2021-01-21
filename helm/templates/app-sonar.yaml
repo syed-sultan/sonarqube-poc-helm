@@ -38,9 +38,20 @@ spec:
       labels:
         app: {{ template "sonarApp.name" . }}
     spec:
+      initContainers:
+        - command:
+            - sh
+            - -c
+            - sysctl -w vm.max_map_count=262144
+          name: set-max-map-count
+          image: busybox
+          securityContext:
+            privileged: true
       containers:
         - name: {{ template "sonarApp.name" . }}-appserver
-          image: {{ .Values.sonarApp.image.repository }}
+          image: {{- if .Values.postreSQLApp.enabled }} {{ .Values.sonarApp.image.repository }} {{- else }} {{ .Values.sonarApp.image.repositoryMysql }} {{- end }}
+          securityContext:
+            privileged: true
           ports:
             - name: sonarqube
               containerPort: {{ .Values.sonarApp.service.targetPort }}
@@ -49,8 +60,13 @@ spec:
               value: {{ .Values.sonarApp.sonarUsername }}
             - name: SONARQUBE_JDBC_PASSWORD
               value: {{ .Values.sonarApp.sonarPassword }}
+              {{- if .Values.postreSQLApp.enabled }}
             - name: SONARQUBE_JDBC_URL
-              value: jdbc:mysql://{{ .Values.mysqlApp.appname }}-service:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true
+              value: jdbc:postgresql://{{ .Values.postreSQLApp.appname }}-service:{{ .Values.postreSQLApp.service.port }}/{{ .Values.postreSQLApp.sonarDB }}
+              {{- else }}
+            - name: SONARQUBE_JDBC_URL
+              value: jdbc:mysql://{{ .Values.mysqlApp.appname }}-service:3306/{{ .Values.postreSQLApp.sonarDB }}?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true&verifyServerCertificate=false&useSSL=true
+              {{- end }}
           volumeMounts:
             - name: {{ template "sonarApp.name" . }}qube-extensions
               mountPath: /opt/sonarqube/extensions

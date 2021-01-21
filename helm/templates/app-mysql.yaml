@@ -33,13 +33,15 @@ spec:
             - containerPort: {{ .Values.mysqlApp.service.port }}
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: {{ .Values.mysqlApp.mysqlRootPassword }}
+              value: {{ .Values.mysqlApp.rootPassword }}
             - name: MYSQL_DATABASE
-              value: {{ .Values.mysqlApp.mysqlSonarDB }}
+              value: {{ .Values.mysqlApp.sonarDB }}
             - name: MYSQL_USER
-              value: {{ .Values.mysqlApp.mysqlUser }}
+              value: {{ .Values.mysqlApp.dbUser }}
             - name: MYSQL_PASSWORD
-              value: {{ .Values.mysqlApp.mysqlPassword }}
+              value: {{ .Values.mysqlApp.dbPassword }}
+          args:
+            - "--ignore-db-dir=lost+found"
           volumeMounts:
             - name: {{ .Values.mysqlApp.appname }}-data
               mountPath: /var/lib/mysql

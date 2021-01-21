@@ -1,0 +1,69 @@
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: {{ .Values.postreSQLApp.appname }}-data
+#spec:
+#  storageClassName: {{ .Values.postreSQLApp.storage.className }}
+#  accessModes:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: {{ .Values.postreSQLApp.storage.storageRequestSize }}
+#---
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: {{ .Values.postreSQLApp.appname }}-app
+#  labels:
+#    app: {{ .Values.postreSQLApp.appname }}
+#spec:
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app: {{ .Values.postreSQLApp.appname }}
+#  template:
+#    metadata:
+#      labels:
+#        app: {{ .Values.postreSQLApp.appname }}
+#    spec:
+#      containers:
+#        - name: {{ .Values.postreSQLApp.appname }}-appserver
+#          image: {{ .Values.postreSQLApp.image.repository }}
+#          imagePullPolicy: {{ .Values.postreSQLApp.image.pullPolicy }}
+#          ports:
+#            - containerPort: {{ .Values.postreSQLApp.service.port }}
+#          env:
+#            - name: BITNAMI_DEBUG
+#              value: "true"
+#            - name: POSTGRES_USER
+#              value: {{ .Values.postreSQLApp.dbUser }}
+#            - name: POSTGRES_PASSWORD
+#              value: {{ .Values.postreSQLApp.dbPassword }}
+#            - name: PGDATA
+#              value: /bitnami/postgresql/data
+#          volumeMounts:
+#            - name: {{ .Values.postreSQLApp.appname }}-data
+#              mountPath: /bitnami/postgresql
+##            - name: {{ .Values.postreSQLApp.appname }}-data
+##              mountPath: /var/lib/postgresql/data
+#          args:
+#            - "--ignore-db-dir=lost+found"
+##          livenessProbe:
+##            exec:
+##              command:
+##                - /bin/sh
+##                - -c
+##                - exec pg_isready -U "sonar" -d "sonar" -h 127.0.0.1 -p 5432
+##            failureThreshold: 6
+##            initialDelaySeconds: 30
+##            periodSeconds: 10
+##            successThreshold: 1
+##            timeoutSeconds: 5
+#      volumes:
+#        - name: {{ .Values.postreSQLApp.appname }}-data
+#          persistentVolumeClaim:
+#            claimName: {{ .Values.postreSQLApp.appname }}-data
+#  strategy:
+#    type: RollingUpdate
+#    rollingUpdate:
+#      maxUnavailable: 0

@@ -6,10 +6,11 @@ sonarApp:
   sonarUsername: sonar
   sonarPassword: sonar
   storage:
-    className: default
+    className: standard
     storageRequestSize: 10Gi
   image:
-    repository: sonarqube:6.5
+    repository: sonarqube:8.5.1-community
+    repositoryMysql: sonarqube:6.5
     pullPolicy: IfNotPresent
   service:
     type: LoadBalancer
@@ -17,16 +18,33 @@ sonarApp:
     targetPort: 9000
 
 mysqlApp:
+  enabled: true
   appname: sonar-mysql
-  mysqlUser: sonar
-  mysqlRootPassword: password
-  mysqlPassword: sonar
-  mysqlSonarDB: sonar
+  dbUser: sonar
+  rootPassword: password
+  dbPassword: sonar
+  sonarDB: sonar
   storage:
-    className: default
+    className: standard
     storageRequestSize: 5Gi
   image:
     repository: mysql:5.7
     pullPolicy: IfNotPresent
   service:
     port: 3306
+
+postreSQLApp:
+  enabled: false
+  appname: sonar-postgresql
+  dbUser: sonar
+  rootPassword: password
+  dbPassword: sonar
+  sonarDB: sonar
+  storage:
+    className: standard
+    storageRequestSize: 5Gi
+  image:
+    repository: bitnami/postgresql:11.10.0-debian-10-r60
+    pullPolicy: IfNotPresent
+  service:
+    port: 5432
